@@ -1,5 +1,6 @@
 package com.systech.nexus.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -25,13 +26,14 @@ import java.util.Map;
  *
  * MAJOR CHANGES:
  * v1.0 (2025-09-18) - Initial implementation with Keycloak JWT integration
+ * v1.1 (2025-09-18) - Made CORS configuration externalized and configurable
  *
  * For complete change history: git log --follow SecurityConfig.java
  *
  * Features:
  * - JWT token validation using Keycloak public keys
  * - Role-based access control with nexus realm roles
- * - CORS configuration for React frontend integration
+ * - Externalized CORS configuration for React frontend integration
  * - Stateless session management
  * - Method-level security annotations support
  *
@@ -41,7 +43,7 @@ import java.util.Map;
  * - No client secret needed for token validation (uses public keys)
  *
  * @author Claude
- * @version 1.0
+ * @version 1.1
  * @since 1.0
  */
 @Configuration
@@ -50,10 +52,12 @@ import java.util.Map;
 @Profile("!dev-no-auth")
 public class SecurityConfig {
 
-    // Hardcoded for dev - TODO: make configurable later
-    private final List<String> allowedOrigins = List.of("http://localhost:3000", "http://localhost:3001", "http://localhost:8080");
-    private final List<String> allowedMethods = List.of("GET", "POST", "PUT", "DELETE", "OPTIONS");
-    private final List<String> allowedHeaders = List.of("Authorization", "Content-Type", "X-Requested-With");
+    private final CorsProperties corsProperties;
+
+    @Autowired
+    public SecurityConfig(CorsProperties corsProperties) {
+        this.corsProperties = corsProperties;
+    }
 
     /**
      * Configure the main security filter chain.
@@ -143,7 +147,7 @@ public class SecurityConfig {
     }
 
     /**
-     * CORS configuration for React frontend.
+     * CORS configuration for React frontend using externalized properties.
      *
      * @return the configured CorsConfigurationSource
      * @since 1.0
@@ -152,12 +156,15 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Configure allowed origins (React frontend URLs)
-        configuration.setAllowedOriginPatterns(allowedOrigins);
-        configuration.setAllowedMethods(allowedMethods);
-        configuration.setAllowedHeaders(allowedHeaders);
+        // Configure allowed origins from properties
+        configuration.setAllowedOriginPatterns(corsProperties.getAllowedOrigins());
+        configuration.setAllowedMethods(corsProperties.getAllowedMethods());
+        configuration.setAllowedHeaders(corsProperties.getAllowedHeaders());
         configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L);
+
+        // Use max-age from properties or default to 3600 seconds
+        Long maxAge = corsProperties.getMaxAge() != null ? corsProperties.getMaxAge() : 3600L;
+        configuration.setMaxAge(maxAge);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

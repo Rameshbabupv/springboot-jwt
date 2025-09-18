@@ -6,7 +6,6 @@ import com.netflix.graphql.dgs.DgsMutation;
 import com.netflix.graphql.dgs.DgsQuery;
 import com.netflix.graphql.dgs.InputArgument;
 import com.systech.nexus.common.annotation.Loggable;
-import com.systech.nexus.common.util.JwtTokenUtil;
 import com.systech.nexus.user.domain.User;
 import com.systech.nexus.user.service.UserService;
 import graphql.execution.DataFetcherResult;
@@ -27,6 +26,7 @@ import java.util.Optional;
  * MAJOR CHANGES:
  * v1.0 (2025-01-17) - Initial implementation with basic CRUD operations
  * v1.1 (2025-09-18) - Added JWT authentication and role-based access control
+ * v1.2 (2025-09-18) - Removed unused JwtTokenUtil dependency
  *
  * For complete change history: git log --follow UserDataFetcher.java
  *
@@ -37,7 +37,6 @@ import java.util.Optional;
  * - Input validation and sanitization
  * - Custom data fetchers for timestamp formatting
  * - AOP logging integration for audit trails
- * - JWT token integration for user context
  *
  * Security Model:
  * - Queries (read): Requires any authenticated user (nexus-user+)
@@ -48,20 +47,18 @@ import java.util.Optional;
  * gracefully in the GraphQL response format.
  *
  * @author Claude Code Assistant
- * @version 1.1
+ * @version 1.2
  * @since 1.0
  */
 @DgsComponent
 public class UserDataFetcher {
 
     private final UserService userService;
-    private final JwtTokenUtil jwtTokenUtil;
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     @Autowired
-    public UserDataFetcher(UserService userService, JwtTokenUtil jwtTokenUtil) {
+    public UserDataFetcher(UserService userService) {
         this.userService = userService;
-        this.jwtTokenUtil = jwtTokenUtil;
     }
 
     // QUERIES (require authentication - any valid user can read)
