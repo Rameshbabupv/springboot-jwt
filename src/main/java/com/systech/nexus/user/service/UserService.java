@@ -12,6 +12,23 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Service layer for User entity business logic and operations.
+ * Provides transactional CRUD operations with validation and error handling.
+ *
+ * Features:
+ * - Transactional operations for data consistency
+ * - AOP logging integration for audit trails
+ * - Validation for unique constraints (username, email)
+ * - Partial update support for flexible modifications
+ * - Comprehensive error handling with meaningful exceptions
+ *
+ * All methods are annotated with @Loggable for automatic logging
+ * and @Transactional for proper transaction management.
+ *
+ * @author Claude Code Assistant
+ * @version 1.0
+ */
 @Service
 @Loggable(description = "User Service Operations")
 public class UserService {

@@ -10,6 +10,20 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+/**
+ * User entity representing a user in the system.
+ * This entity is mapped to the 'users' table in the database.
+ *
+ * Features:
+ * - Unique constraints on username and email
+ * - Automatic timestamp management for created/updated times
+ * - Validation annotations for data integrity
+ * - Support for partial updates via updateFrom() method
+ * - Business methods for common operations
+ *
+ * @author Claude Code Assistant
+ * @version 1.0
+ */
 @Entity
 @Table(name = "users",
        uniqueConstraints = {
@@ -18,41 +32,80 @@ import java.util.Objects;
        })
 public class User {
 
+    /**
+     * Primary key for the user entity.
+     * Auto-generated using database identity strategy.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * Unique username for the user.
+     * Must be between 3-50 characters and is case-sensitive.
+     * Used for user identification and login.
+     */
     @Column(nullable = false, unique = true, length = 50)
     @NotBlank(message = "Username is required")
     @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
     private String username;
 
+    /**
+     * User's email address.
+     * Must be unique and valid email format.
+     * Case-insensitive for uniqueness checking.
+     */
     @Column(nullable = false, unique = true, length = 100)
     @NotBlank(message = "Email is required")
     @Email(message = "Email should be valid")
     @Size(max = 100, message = "Email must not exceed 100 characters")
     private String email;
 
+    /**
+     * User's first name.
+     * Optional field, max 50 characters.
+     */
     @Column(length = 50)
     @Size(max = 50, message = "First name must not exceed 50 characters")
     private String firstName;
 
+    /**
+     * User's last name.
+     * Optional field, max 50 characters.
+     */
     @Column(length = 50)
     @Size(max = 50, message = "Last name must not exceed 50 characters")
     private String lastName;
 
+    /**
+     * Timestamp when the user record was created.
+     * Automatically set by Hibernate on entity creation.
+     */
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    /**
+     * Timestamp when the user record was last updated.
+     * Automatically updated by Hibernate on entity modification.
+     */
     @UpdateTimestamp
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    // Default constructor
+    /**
+     * Default no-args constructor required by JPA.
+     */
     public User() {}
 
-    // Constructor for creation
+    /**
+     * Constructor for creating a new user with all required and optional fields.
+     *
+     * @param username  the unique username for the user
+     * @param email     the user's email address
+     * @param firstName the user's first name (optional)
+     * @param lastName  the user's last name (optional)
+     */
     public User(String username, String email, String firstName, String lastName) {
         this.username = username;
         this.email = email;
@@ -117,7 +170,12 @@ public class User {
         this.updatedAt = updatedAt;
     }
 
-    // Business methods
+    /**
+     * Business method to get the user's full display name.
+     * Falls back to username if name fields are not available.
+     *
+     * @return the full name in "firstName lastName" format, or username as fallback
+     */
     public String getFullName() {
         if (firstName != null && lastName != null) {
             return firstName + " " + lastName;
@@ -129,6 +187,13 @@ public class User {
         return username;
     }
 
+    /**
+     * Performs a partial update of user data.
+     * Only updates fields that are non-null in the updateData parameter.
+     * This method is used for PATCH-style updates where only specific fields are modified.
+     *
+     * @param updateData User object containing the fields to update
+     */
     public void updateFrom(User updateData) {
         if (updateData.getUsername() != null) {
             this.username = updateData.getUsername();

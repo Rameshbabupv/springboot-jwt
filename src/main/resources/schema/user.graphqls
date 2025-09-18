@@ -1,35 +1,83 @@
+# User Management GraphQL Schema
+#
+# This schema defines the User entity and its related operations for the GraphQL API.
+# It provides comprehensive CRUD operations with proper input validation and type safety.
+#
+# Features:
+# - Complete User type definition with required and optional fields
+# - Input types for create and update operations with different validation rules
+# - Query operations for retrieving users by various criteria
+# - Mutation operations for user lifecycle management
+# - Timestamp fields formatted as ISO 8601 strings
+#
+# Author: Claude Code Assistant
+# Version: 1.0
+
+"""
+User entity representing a registered user in the system.
+Contains personal information, contact details, and audit timestamps.
+"""
 type User {
+    "Unique identifier for the user"
     id: ID!
+    "Unique username for login (case-sensitive)"
     username: String!
+    "User's email address (unique, case-insensitive)"
     email: String!
+    "User's first name (optional)"
     firstName: String
+    "User's last name (optional)"
     lastName: String
+    "ISO 8601 timestamp when the user was created"
     createdAt: String!
+    "ISO 8601 timestamp when the user was last updated"
     updatedAt: String!
 }
 
+"""
+Input type for creating a new user.
+All required fields must be provided and will be validated.
+"""
 input CreateUserInput {
+    "Username (3-50 characters, must be unique)"
     username: String!
+    "Email address (must be valid format and unique)"
     email: String!
+    "First name (optional, max 50 characters)"
     firstName: String
+    "Last name (optional, max 50 characters)"
     lastName: String
 }
 
+"""
+Input type for updating an existing user.
+All fields are optional - only provided fields will be updated (partial update).
+"""
 input UpdateUserInput {
+    "New username (must be unique if provided)"
     username: String
+    "New email address (must be unique if provided)"
     email: String
+    "New first name"
     firstName: String
+    "New last name"
     lastName: String
 }
 
 extend type Query {
+    "Get all users ordered by creation date (newest first)"
     users: [User!]!
+    "Get a specific user by their ID"
     user(id: ID!): User
+    "Get a specific user by their username (case-sensitive)"
     userByUsername(username: String!): User
 }
 
 extend type Mutation {
+    "Create a new user with the provided information"
     createUser(input: CreateUserInput!): User!
+    "Update an existing user's information (partial update supported)"
     updateUser(id: ID!, input: UpdateUserInput!): User!
+    "Delete a user by their ID (returns true if successful)"
     deleteUser(id: ID!): Boolean!
 }

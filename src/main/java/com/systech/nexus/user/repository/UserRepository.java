@@ -8,6 +8,19 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+/**
+ * Repository interface for User entity operations.
+ * Extends JpaRepository to provide CRUD operations and custom query methods.
+ *
+ * Features:
+ * - Case-sensitive username operations for security
+ * - Case-insensitive email operations for user experience
+ * - Flexible search across username, firstName, and lastName
+ * - Ordering capabilities for user listings
+ *
+ * @author Claude Code Assistant
+ * @version 1.0
+ */
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 

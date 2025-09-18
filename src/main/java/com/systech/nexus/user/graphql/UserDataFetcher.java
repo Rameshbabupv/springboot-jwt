@@ -19,6 +19,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * GraphQL Data Fetcher for User entity operations.
+ * Handles all GraphQL queries and mutations related to User management.
+ *
+ * This class uses Netflix DGS (Domain Graph Service) framework to expose
+ * GraphQL operations for the User entity. It provides comprehensive
+ * CRUD operations with proper error handling and data formatting.
+ *
+ * Features:
+ * - Complete CRUD operations via GraphQL
+ * - Comprehensive error handling with detailed GraphQL errors
+ * - Input validation and sanitization
+ * - Custom data fetchers for timestamp formatting
+ * - AOP logging integration for audit trails
+ *
+ * All operations return DataFetcherResult to handle both success and error cases
+ * gracefully in the GraphQL response format.
+ *
+ * @author Claude Code Assistant
+ * @version 1.0
+ */
 @DgsComponent
 public class UserDataFetcher {
 
