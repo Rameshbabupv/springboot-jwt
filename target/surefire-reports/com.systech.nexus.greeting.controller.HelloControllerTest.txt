@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.systech.nexus.greeting.controller.HelloControllerTest
+-------------------------------------------------------------------------------
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.030 s -- in com.systech.nexus.greeting.controller.HelloControllerTest

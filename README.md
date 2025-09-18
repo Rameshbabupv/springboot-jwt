@@ -40,6 +40,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
 - **Java 17** + **Spring Boot 3.2.0**
 - **Maven** for build management
 - **DGS Framework 8.1.1** for GraphQL
+- **Spring AOP** for cross-cutting logging concerns
 - **H2 Database** (dev) → **PostgreSQL** (production)
 - **JUnit 5** for testing
 
@@ -93,6 +94,7 @@ This project follows **GitFlow** workflow:
 - **[API Testing Guide](docs/api-testing.md)** - Detailed testing examples
 - **[Framework Guide](docs/framework.md)** - Architecture overview
 - **[TDD Workflow](docs/tdd-workflow.md)** - Test-driven development guide
+- **[AOP Logging](docs/features/aop-logging.md)** - Cross-cutting logging implementation
 - **[Constitution](CONSTITUTION.md)** - Non-negotiable project principles
 
 ## 🎯 Next Steps
