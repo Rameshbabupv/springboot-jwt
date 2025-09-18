@@ -1,6 +1,5 @@
 package com.systech.nexus.config;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -8,14 +7,18 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Security Configuration for Nexus Application with JWT Authentication.
@@ -47,14 +50,10 @@ import java.util.List;
 @Profile("!dev-no-auth")
 public class SecurityConfig {
 
-    @Value("${nexus.security.cors.allowed-origins:http://localhost:3000,http://localhost:3001}")
-    private List<String> allowedOrigins;
-
-    @Value("${nexus.security.cors.allowed-methods:GET,POST,PUT,DELETE,OPTIONS}")
-    private List<String> allowedMethods;
-
-    @Value("${nexus.security.cors.allowed-headers:Authorization,Content-Type,X-Requested-With}")
-    private List<String> allowedHeaders;
+    // Hardcoded for dev - TODO: make configurable later
+    private final List<String> allowedOrigins = List.of("http://localhost:3000", "http://localhost:3001", "http://localhost:8080");
+    private final List<String> allowedMethods = List.of("GET", "POST", "PUT", "DELETE", "OPTIONS");
+    private final List<String> allowedHeaders = List.of("Authorization", "Content-Type", "X-Requested-With");
 
     /**
      * Configure the main security filter chain.
@@ -114,21 +113,31 @@ public class SecurityConfig {
 
     /**
      * Configure JWT to Spring Security roles conversion.
-     * Extracts roles from Keycloak JWT token.
+     * Extracts roles from Keycloak JWT token with custom realm_access handling.
      *
      * @return the configured JwtAuthenticationConverter
      * @since 1.0
      */
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtGrantedAuthoritiesConverter authoritiesConverter = new JwtGrantedAuthoritiesConverter();
-
-        // Configure role extraction from JWT
-        authoritiesConverter.setAuthorityPrefix("ROLE_");
-        authoritiesConverter.setAuthoritiesClaimName("realm_access.roles");
-
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(authoritiesConverter);
+
+        // Custom authorities converter for Keycloak realm_access.roles
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            Collection<GrantedAuthority> authorities = new ArrayList<>();
+
+            // Extract realm roles
+            Map<String, Object> realmAccess = jwt.getClaimAsMap("realm_access");
+            if (realmAccess != null && realmAccess.containsKey("roles")) {
+                @SuppressWarnings("unchecked")
+                List<String> roles = (List<String>) realmAccess.get("roles");
+                for (String role : roles) {
+                    authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
+                }
+            }
+
+            return authorities;
+        });
 
         return converter;
     }
