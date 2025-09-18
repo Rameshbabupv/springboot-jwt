@@ -3,6 +3,7 @@ package com.systech.nexus.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -43,15 +44,16 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
+@Profile("!dev-no-auth")
 public class SecurityConfig {
 
-    @Value("${nexus.security.cors.allowed-origins}")
+    @Value("${nexus.security.cors.allowed-origins:http://localhost:3000,http://localhost:3001}")
     private List<String> allowedOrigins;
 
-    @Value("${nexus.security.cors.allowed-methods}")
+    @Value("${nexus.security.cors.allowed-methods:GET,POST,PUT,DELETE,OPTIONS}")
     private List<String> allowedMethods;
 
-    @Value("${nexus.security.cors.allowed-headers}")
+    @Value("${nexus.security.cors.allowed-headers:Authorization,Content-Type,X-Requested-With}")
     private List<String> allowedHeaders;
 
     /**
