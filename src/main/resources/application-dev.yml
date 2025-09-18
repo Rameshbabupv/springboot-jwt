@@ -1,0 +1,39 @@
+# Development Profile Configuration for JWT Authentication
+# Inherits base configuration from application.yml
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # For development, we'll use the Keycloak instance from podman configuration
+          issuer-uri: http://localhost:8090/realms/nexus-dev
+
+# CORS Configuration for React Frontend (Development)
+nexus:
+  security:
+    cors:
+      allowed-origins:
+        - http://localhost:3000
+        - http://localhost:3001
+        - http://localhost:8080
+      allowed-methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+      allowed-headers:
+        - Authorization
+        - Content-Type
+        - X-Requested-With
+      max-age: 3600
+
+# Development-specific logging (more verbose for security debugging)
+logging:
+  level:
+    com.systech.nexus: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG
+    org.springframework.web.cors: DEBUG
+    root: INFO
