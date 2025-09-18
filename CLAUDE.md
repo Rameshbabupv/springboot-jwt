@@ -76,6 +76,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 - **Use @Loggable annotation** for new methods requiring logging
 - **Maintain consistent naming** conventions
 - **Add documentation** for new features in `docs/features/`
+- **Follow documentation standards** as defined in "Documentation Guidelines" section
 
 ## 📋 Development Checklist
 
@@ -149,9 +150,195 @@ src/main/java/com/systech/nexus/
 └── NexusApplication.java
 ```
 
+## 📚 Documentation Guidelines (MANDATORY)
+
+### Class-Level Documentation Standards
+
+**ALL classes MUST include comprehensive documentation following the 3-Level Strategy:**
+
+#### 1. Major Changes Changelog (In-Class)
+```java
+/**
+ * ClassName description here.
+ *
+ * MAJOR CHANGES:
+ * v1.0 (YYYY-MM-DD) - Initial implementation with core functionality
+ * v1.1 (YYYY-MM-DD) - Added validation layer and error handling
+ * v1.2 (YYYY-MM-DD) - Refactored architecture for better separation of concerns
+ *
+ * For complete change history: git log --follow ClassName.java
+ *
+ * Features:
+ * - List key features and capabilities
+ * - Explain architectural decisions
+ * - Document important constraints or patterns
+ *
+ * @author Author Name
+ * @version 1.2
+ * @since 1.0
+ */
+```
+
+#### 2. What to Include in In-Class Changelog
+**INCLUDE** (Major changes only):
+- ✅ Initial implementation
+- ✅ Major architectural changes
+- ✅ Breaking API changes
+- ✅ Significant refactoring
+- ✅ Design pattern changes
+- ✅ Major feature additions
+
+**DON'T INCLUDE** (Use git history):
+- ❌ Bug fixes
+- ❌ Minor enhancements
+- ❌ Code style changes
+- ❌ Dependency updates
+- ❌ Performance optimizations
+- ❌ Documentation updates
+
+#### 3. Layer-Specific Documentation Requirements
+
+**🏛️ ENTITY CLASSES (@Entity):**
+```java
+/**
+ * Entity description and database mapping info.
+ *
+ * MAJOR CHANGES:
+ * v1.0 (2025-01-17) - Initial implementation with basic fields
+ * v1.1 (2025-01-20) - Added validation constraints and audit fields
+ *
+ * Database Details:
+ * - Table: table_name
+ * - Primary Key: field_name (strategy)
+ * - Unique Constraints: field1, field2
+ * - Indexes: index descriptions
+ *
+ * Business Rules:
+ * - Document important business logic
+ * - Validation rules and constraints
+ * - Relationships and dependencies
+ */
+```
+
+**🔧 SERVICE CLASSES (@Service):**
+```java
+/**
+ * Service description and business logic overview.
+ *
+ * MAJOR CHANGES:
+ * v1.0 (2025-01-17) - Initial CRUD operations
+ * v1.1 (2025-01-20) - Added transaction management and validation
+ * v1.2 (2025-01-25) - Refactored to use composition pattern
+ *
+ * Responsibilities:
+ * - List primary business responsibilities
+ * - Transaction boundaries
+ * - Integration points
+ * - Error handling strategy
+ *
+ * Dependencies:
+ * - Repository dependencies
+ * - External service integrations
+ * - Configuration requirements
+ */
+```
+
+**🌐 CONTROLLER/DATAFETCHER CLASSES:**
+```java
+/**
+ * API layer description and endpoint overview.
+ *
+ * MAJOR CHANGES:
+ * v1.0 (2025-01-17) - Initial REST/GraphQL endpoints
+ * v1.1 (2025-01-20) - Added comprehensive error handling
+ * v1.2 (2025-01-25) - Added input validation and security
+ *
+ * API Contract:
+ * - List main endpoints/operations
+ * - Input/output formats
+ * - Error response formats
+ * - Authentication requirements
+ *
+ * Features:
+ * - Request/response transformation
+ * - Validation and sanitization
+ * - Error handling strategy
+ */
+```
+
+**💾 REPOSITORY INTERFACES:**
+```java
+/**
+ * Data access layer description and query strategy.
+ *
+ * MAJOR CHANGES:
+ * v1.0 (2025-01-17) - Initial CRUD queries
+ * v1.1 (2025-01-20) - Added custom search queries
+ * v1.2 (2025-01-25) - Optimized query performance
+ *
+ * Query Strategy:
+ * - Custom query explanations
+ * - Performance considerations
+ * - Index usage
+ * - Case sensitivity rules
+ */
+```
+
+### Method-Level Documentation
+
+**REQUIRED for all public methods:**
+```java
+/**
+ * Method description explaining purpose and behavior.
+ *
+ * @param paramName description of parameter
+ * @return description of return value
+ * @throws ExceptionType when and why this exception occurs
+ * @since version when method was added
+ */
+```
+
+### GraphQL Schema Documentation
+
+**ALL GraphQL schemas MUST include:**
+```graphql
+# Schema file header with purpose and version
+#
+# Author: Name
+# Version: 1.x
+# Last Updated: YYYY-MM-DD
+
+"""
+Type description explaining the entity and its purpose.
+Include business context and usage notes.
+"""
+type EntityName {
+    "Field description with constraints and format"
+    fieldName: String!
+}
+```
+
+### Documentation Maintenance Rules
+
+1. **ALWAYS update version number** when making changes
+2. **ALWAYS add major changes** to changelog
+3. **ALWAYS reference git history** for detailed changes
+4. **NEVER let documentation become stale**
+5. **ALWAYS document breaking changes** with migration notes
+
+### Enforcement Checklist
+
+Before committing ANY class:
+- [ ] Class has proper header documentation
+- [ ] Major changes are documented in changelog
+- [ ] Version number is updated if changed
+- [ ] All public methods have JavaDoc
+- [ ] Author and @since tags present
+- [ ] Feature descriptions are current
+
 ## 🎯 Next Development Priorities
 
-1. **Fix GitFlow violation**: Move AOP to proper feature branch
+1. **Apply documentation standards**: Update existing classes to new standards
 2. **JWT Authentication**: Create `feature/jwt-auth` branch
 3. **Database Entities**: Create `feature/database-entities` branch
 4. **GraphQL Mutations**: Create `feature/graphql-mutations` branch
