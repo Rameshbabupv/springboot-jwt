@@ -12,7 +12,9 @@ docs/
 └── features/                        # Feature-specific documentation
     ├── hello-world.md               # Hello world implementation
     ├── aop-logging.md               # AOP logging feature
-    └── jwt-authentication.md        # JWT authentication feature
+    ├── jwt-authentication.md        # JWT authentication feature
+    ├── user-crud-graphql.md         # User CRUD GraphQL operations
+    └── jax-rs-dependency-fix.md     # Jakarta EE namespace fix
 ```
 
 ## 🎯 Purpose
@@ -32,6 +34,8 @@ Keep **short, simple, and practical** documentation for ongoing development.
 ### Features
 - **[Hello World Feature](features/hello-world.md)** - First implementation details
 - **[AOP Logging Feature](features/aop-logging.md)** - Aspect-oriented programming logging
+- **[User CRUD GraphQL](features/user-crud-graphql.md)** - Complete GraphQL user management
+- **[JAX-RS Dependency Fix](features/jax-rs-dependency-fix.md)** - Jakarta EE namespace resolution
 
 ## 🔄 Development Process
 1. Write failing tests first (TDD)
