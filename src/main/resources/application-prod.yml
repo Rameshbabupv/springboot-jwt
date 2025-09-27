@@ -1,0 +1,87 @@
+# Production Profile Configuration for PostgreSQL Database
+# Use this profile for production deployment with PostgreSQL
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/nexus_hrms
+    username: rameshbabu
+    # Password should be provided via environment variable in production:
+    # ${POSTGRES_PASSWORD:your_default_password}
+    password: ${POSTGRES_PASSWORD:nexus_password}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    properties:
+      hibernate:
+        default_schema: nx_core
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          lob:
+            non_contextual_creation: true
+    hibernate:
+      ddl-auto: validate  # Use 'validate' for production, 'update' for development
+    show-sql: false  # Disable SQL logging in production
+
+  # Disable H2 console in production
+  h2:
+    console:
+      enabled: false
+
+# CORS Configuration for Production Frontend
+nexus:
+  security:
+    cors:
+      allowed-origins:
+        - ${FRONTEND_URL:http://localhost:3000}
+        - ${FRONTEND_URL_ALT:http://localhost:3001}
+      allowed-methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+      allowed-headers:
+        - Authorization
+        - Content-Type
+        - X-Requested-With
+      max-age: 3600
+
+# Keycloak Configuration for Production
+keycloak:
+  admin:
+    server-url: ${KEYCLOAK_URL:http://localhost:8090}
+    realm: systech
+    client-id: admin-cli
+    username: ${KEYCLOAK_ADMIN_USER:admin}
+    password: ${KEYCLOAK_ADMIN_PASSWORD:admin}
+
+# Production Logging Configuration
+logging:
+  level:
+    com.systech.nexus: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
+    root: INFO
+  file:
+    name: logs/nexus-prod.log
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+# Server Configuration
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /
+
+# Actuator Configuration for Production Monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
