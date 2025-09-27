@@ -64,7 +64,7 @@ public class UserDataFetcher {
     // QUERIES (require authentication - any valid user can read)
 
     @DgsQuery
-    @PreAuthorize("hasAnyRole('nexus-user', 'nexus-manager', 'nexus-admin')")
+    @PreAuthorize("hasAnyRole('basic-users', 'app-admins', 'platform-admins')")
     @Loggable(description = "GraphQL query: get all users")
     public DataFetcherResult<List<User>> users() {
         try {
@@ -83,7 +83,7 @@ public class UserDataFetcher {
     }
 
     @DgsQuery
-    @PreAuthorize("hasAnyRole('nexus-user', 'nexus-manager', 'nexus-admin')")
+    @PreAuthorize("hasAnyRole('basic-users', 'app-admins', 'platform-admins')")
     @Loggable(description = "GraphQL query: get user by ID")
     public DataFetcherResult<User> user(@InputArgument String id) {
         try {
@@ -120,7 +120,7 @@ public class UserDataFetcher {
     }
 
     @DgsQuery
-    @PreAuthorize("hasAnyRole('nexus-user', 'nexus-manager', 'nexus-admin')")
+    @PreAuthorize("hasAnyRole('basic-users', 'app-admins', 'platform-admins')")
     @Loggable(description = "GraphQL query: get user by username")
     public DataFetcherResult<User> userByUsername(@InputArgument String username) {
         try {
@@ -151,7 +151,7 @@ public class UserDataFetcher {
     // MUTATIONS (require elevated privileges)
 
     @DgsMutation
-    @PreAuthorize("hasAnyRole('nexus-manager', 'nexus-admin')")
+    @PreAuthorize("hasAnyRole('app-admins', 'platform-admins')")
     @Loggable(description = "GraphQL mutation: create user")
     public DataFetcherResult<User> createUser(@InputArgument Map<String, Object> input) {
         try {
@@ -195,7 +195,7 @@ public class UserDataFetcher {
     }
 
     @DgsMutation
-    @PreAuthorize("hasAnyRole('nexus-manager', 'nexus-admin')")
+    @PreAuthorize("hasAnyRole('app-admins', 'platform-admins')")
     @Loggable(description = "GraphQL mutation: update user")
     public DataFetcherResult<User> updateUser(@InputArgument String id, @InputArgument Map<String, Object> input) {
         try {
@@ -228,7 +228,7 @@ public class UserDataFetcher {
     }
 
     @DgsMutation
-    @PreAuthorize("hasRole('nexus-admin')")
+    @PreAuthorize("hasRole('platform-admins')")
     @Loggable(description = "GraphQL mutation: delete user")
     public DataFetcherResult<Boolean> deleteUser(@InputArgument String id) {
         try {

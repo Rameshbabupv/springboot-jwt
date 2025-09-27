@@ -1,6 +1,6 @@
 type Query {
-    hello: String
-    customGreeting(name: String!): String
+    # Public queries removed - GraphQL requires authentication
+    # All queries are now defined in user.graphqls with proper authorization
 }
 
 type Mutation {

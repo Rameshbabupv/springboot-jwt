@@ -130,7 +130,7 @@ public class SecurityConfig {
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
             Collection<GrantedAuthority> authorities = new ArrayList<>();
 
-            // Extract groups claim
+            // Extract groups claim (if present)
             @SuppressWarnings("unchecked")
             List<String> groups = jwt.getClaimAsStringList("groups");
             if (groups != null) {
@@ -139,13 +139,26 @@ public class SecurityConfig {
                 }
             }
 
-            // Also extract realm roles for backward compatibility
+            // Extract realm roles and map to expected groups
             Map<String, Object> realmAccess = jwt.getClaimAsMap("realm_access");
             if (realmAccess != null && realmAccess.containsKey("roles")) {
                 @SuppressWarnings("unchecked")
                 List<String> roles = (List<String>) realmAccess.get("roles");
                 for (String role : roles) {
+                    // Add original role with ROLE_ prefix
                     authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
+
+                    // Map Keycloak realm roles to expected group authorities
+                    if ("platform-admins".equals(role)) {
+                        authorities.add(new SimpleGrantedAuthority("ROLE_platform-admins"));
+                        authorities.add(new SimpleGrantedAuthority("ROLE_app-admins"));
+                        authorities.add(new SimpleGrantedAuthority("ROLE_basic-users"));
+                    } else if ("app-admins".equals(role)) {
+                        authorities.add(new SimpleGrantedAuthority("ROLE_app-admins"));
+                        authorities.add(new SimpleGrantedAuthority("ROLE_basic-users"));
+                    } else if ("basic-users".equals(role)) {
+                        authorities.add(new SimpleGrantedAuthority("ROLE_basic-users"));
+                    }
                 }
             }
 

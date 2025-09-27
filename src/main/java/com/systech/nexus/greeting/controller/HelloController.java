@@ -38,7 +38,7 @@ public class HelloController {
 
     // User level endpoints (requires any authenticated user)
     @GetMapping("/user/hello")
-    @PreAuthorize("hasAnyRole('users', 'app-admins', 'platform-admins')")
+    @PreAuthorize("hasAnyRole('basic-users', 'app-admins', 'platform-admins')")
     @Loggable(description = "Get authenticated user hello message")
     public Greeting userHello() {
         String username = jwtTokenUtil.getCurrentUsername();
@@ -47,7 +47,7 @@ public class HelloController {
     }
 
     @GetMapping("/user/profile")
-    @PreAuthorize("hasAnyRole('users', 'app-admins', 'platform-admins')")
+    @PreAuthorize("hasAnyRole('basic-users', 'app-admins', 'platform-admins')")
     @Loggable(description = "Get user profile information")
     public Map<String, String> userProfile() {
         return Map.of(
@@ -89,14 +89,14 @@ public class HelloController {
 
     // Legacy endpoints (kept for backward compatibility, now require authentication)
     @GetMapping("/hello")
-    @PreAuthorize("hasAnyRole('users', 'app-admins', 'platform-admins')")
+    @PreAuthorize("hasAnyRole('basic-users', 'app-admins', 'platform-admins')")
     @Loggable(description = "Get hello world message (legacy endpoint)")
     public Greeting hello() {
         return helloService.getHelloMessage();
     }
 
     @GetMapping("/hello/custom")
-    @PreAuthorize("hasAnyRole('users', 'app-admins', 'platform-admins')")
+    @PreAuthorize("hasAnyRole('basic-users', 'app-admins', 'platform-admins')")
     @Loggable(description = "Get custom greeting message (legacy endpoint)")
     public Greeting customHello(@RequestParam String name) {
         return helloService.getCustomGreeting(name);
