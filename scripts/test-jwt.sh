@@ -101,7 +101,7 @@ main() {
     fi
 
     local username=$1
-    local password="nexus123"  # Default password for all test users
+    local password="systech@123"  # Default password for all test users
 
     # Validate username
     case $username in

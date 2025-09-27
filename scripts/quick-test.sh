@@ -5,13 +5,13 @@
 #
 
 USERNAME=${1:-babu.systech}
-PASSWORD="nexus123"
+PASSWORD="systech@123"
 
 echo "🔐 Testing JWT for user: $USERNAME"
 
 # Get token
 echo "Getting token..."
-TOKEN=$(curl -s -X POST "http://localhost:8090/realms/nexus-dev/protocol/openid-connect/token" \
+TOKEN=$(curl -s -X POST "http://localhost:8090/realms/systech/protocol/openid-connect/token" \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "grant_type=password&client_id=systech-hrms-client&username=$USERNAME&password=$PASSWORD" | \
   python3 -c "import sys, json; data=json.load(sys.stdin); print(data.get('access_token', 'ERROR'))" 2>/dev/null)

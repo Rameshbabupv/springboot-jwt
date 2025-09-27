@@ -23,7 +23,7 @@ echo -e "${BLUE}🔧 Creating Keycloak Users via Spring Boot API${NC}"
 echo "Getting admin token..."
 ADMIN_TOKEN=$(curl -s -X POST "${KEYCLOAK_URL}/realms/${REALM}/protocol/openid-connect/token" \
   -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "grant_type=password&client_id=${CLIENT_ID}&username=babu.systech&password=nexus123" | \
+  -d "grant_type=password&client_id=${CLIENT_ID}&username=babu.systech&password=systech@123" | \
   python3 -c "import sys, json; data=json.load(sys.stdin); print(data.get('access_token', 'ERROR'))" 2>/dev/null)
 
 if [ "$ADMIN_TOKEN" = "ERROR" ] || [ -z "$ADMIN_TOKEN" ]; then
