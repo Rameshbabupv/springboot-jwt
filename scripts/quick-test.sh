@@ -4,7 +4,7 @@
 # Simple script to get token and test basic functionality
 #
 
-USERNAME=${1:-nexus-user}
+USERNAME=${1:-babu.systech}
 PASSWORD="nexus123"
 
 echo "🔐 Testing JWT for user: $USERNAME"
@@ -13,7 +13,7 @@ echo "🔐 Testing JWT for user: $USERNAME"
 echo "Getting token..."
 TOKEN=$(curl -s -X POST "http://localhost:8090/realms/nexus-dev/protocol/openid-connect/token" \
   -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "grant_type=password&client_id=nexus-web-app&username=$USERNAME&password=$PASSWORD" | \
+  -d "grant_type=password&client_id=systech-hrms-client&username=$USERNAME&password=$PASSWORD" | \
   python3 -c "import sys, json; data=json.load(sys.stdin); print(data.get('access_token', 'ERROR'))" 2>/dev/null)
 
 if [ "$TOKEN" = "ERROR" ] || [ -z "$TOKEN" ]; then

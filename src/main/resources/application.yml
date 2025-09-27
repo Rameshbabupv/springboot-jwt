@@ -24,7 +24,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8090/realms/nexus-dev
+          issuer-uri: http://localhost:8090/realms/systech
 
 # CORS Configuration for React Frontend
 nexus:

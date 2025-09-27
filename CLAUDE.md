@@ -416,10 +416,10 @@ Before committing ANY class:
 ./start-keycloak.sh
 
 # 2. Get JWT Token
-curl -X POST http://localhost:8090/realms/nexus-dev/protocol/openid-connect/token \
+curl -X POST http://localhost:8090/realms/systech/protocol/openid-connect/token \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "grant_type=password" \
-  -d "client_id=nexus-web-app" \
+  -d "client_id=systech-hrms-client" \
   -d "username=nexus-user" \
   -d "password=nexus123"
 

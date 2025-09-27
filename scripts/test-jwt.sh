@@ -10,8 +10,8 @@ set -e
 
 # Configuration
 KEYCLOAK_URL="http://localhost:8090"
-REALM="nexus-dev"
-CLIENT_ID="nexus-web-app"
+REALM="systech"
+CLIENT_ID="systech-hrms-client"
 API_BASE="http://localhost:8080"
 
 # Colors for output
@@ -96,7 +96,7 @@ test_endpoint() {
 main() {
     if [ $# -ne 1 ]; then
         echo "Usage: $0 <username>"
-        echo "Available users: nexus-user, nexus-manager, nexus-admin"
+        echo "Available users: babu.systech (or other systech users)"
         exit 1
     fi
 
@@ -105,10 +105,10 @@ main() {
 
     # Validate username
     case $username in
-        nexus-user|nexus-manager|nexus-admin) ;;
+        babu.systech|*) ;;
         *)
             print_status "error" "Unknown user: $username"
-            echo "Available users: nexus-user, nexus-manager, nexus-admin"
+            echo "Available users: babu.systech (or other systech users)"
             exit 1
             ;;
     esac
