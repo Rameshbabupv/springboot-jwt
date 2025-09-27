@@ -89,10 +89,10 @@ public class SecurityConfig {
                 .requestMatchers("/graphiql/**").permitAll() // GraphQL IDE for development
                 .requestMatchers("/h2-console/**").permitAll() // H2 database console
 
-                // Role-based access control
-                .requestMatchers("/api/admin/**").hasRole("nexus-admin")
-                .requestMatchers("/api/manager/**").hasAnyRole("nexus-admin", "nexus-manager")
-                .requestMatchers("/api/user/**").hasAnyRole("nexus-admin", "nexus-manager", "nexus-user")
+                // Group-based access control (Keycloak groups)
+                .requestMatchers("/api/admin/**").hasRole("platform-admins")
+                .requestMatchers("/api/manager/**").hasAnyRole("platform-admins", "app-admins")
+                .requestMatchers("/api/user/**").hasAnyRole("platform-admins", "app-admins", "users")
 
                 // GraphQL endpoint (requires authentication)
                 .requestMatchers("/graphql").authenticated()
@@ -126,11 +126,20 @@ public class SecurityConfig {
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
 
-        // Custom authorities converter for Keycloak realm_access.roles
+        // Custom authorities converter for Keycloak groups
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
             Collection<GrantedAuthority> authorities = new ArrayList<>();
 
-            // Extract realm roles
+            // Extract groups claim
+            @SuppressWarnings("unchecked")
+            List<String> groups = jwt.getClaimAsStringList("groups");
+            if (groups != null) {
+                for (String group : groups) {
+                    authorities.add(new SimpleGrantedAuthority("ROLE_" + group));
+                }
+            }
+
+            // Also extract realm roles for backward compatibility
             Map<String, Object> realmAccess = jwt.getClaimAsMap("realm_access");
             if (realmAccess != null && realmAccess.containsKey("roles")) {
                 @SuppressWarnings("unchecked")

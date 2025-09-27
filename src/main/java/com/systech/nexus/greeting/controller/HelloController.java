@@ -38,7 +38,7 @@ public class HelloController {
 
     // User level endpoints (requires any authenticated user)
     @GetMapping("/user/hello")
-    @PreAuthorize("hasAnyRole('nexus-user', 'nexus-manager', 'nexus-admin')")
+    @PreAuthorize("hasAnyRole('users', 'app-admins', 'platform-admins')")
     @Loggable(description = "Get authenticated user hello message")
     public Greeting userHello() {
         String username = jwtTokenUtil.getCurrentUsername();
@@ -47,20 +47,21 @@ public class HelloController {
     }
 
     @GetMapping("/user/profile")
-    @PreAuthorize("hasAnyRole('nexus-user', 'nexus-manager', 'nexus-admin')")
+    @PreAuthorize("hasAnyRole('users', 'app-admins', 'platform-admins')")
     @Loggable(description = "Get user profile information")
     public Map<String, String> userProfile() {
         return Map.of(
             "userId", jwtTokenUtil.getCurrentUserId() != null ? jwtTokenUtil.getCurrentUserId() : "unknown",
             "username", jwtTokenUtil.getCurrentUsername() != null ? jwtTokenUtil.getCurrentUsername() : "unknown",
             "email", jwtTokenUtil.getCurrentUserEmail() != null ? jwtTokenUtil.getCurrentUserEmail() : "unknown",
+            "groups", String.join(", ", jwtTokenUtil.getCurrentUserGroups()),
             "roles", String.join(", ", jwtTokenUtil.getCurrentUserRoles())
         );
     }
 
     // Manager level endpoints (requires manager or admin role)
     @GetMapping("/manager/hello")
-    @PreAuthorize("hasAnyRole('nexus-manager', 'nexus-admin')")
+    @PreAuthorize("hasAnyRole('app-admins', 'platform-admins')")
     @Loggable(description = "Get manager level hello message")
     public Greeting managerHello() {
         return new Greeting("Hello Manager! You have elevated access.");
@@ -68,14 +69,14 @@ public class HelloController {
 
     // Admin level endpoints (requires admin role only)
     @GetMapping("/admin/hello")
-    @PreAuthorize("hasRole('nexus-admin')")
+    @PreAuthorize("hasRole('platform-admins')")
     @Loggable(description = "Get admin level hello message")
     public Greeting adminHello() {
         return new Greeting("Hello Admin! You have full access to the system.");
     }
 
     @GetMapping("/admin/system-status")
-    @PreAuthorize("hasRole('nexus-admin')")
+    @PreAuthorize("hasRole('platform-admins')")
     @Loggable(description = "Get system status information")
     public Map<String, String> systemStatus() {
         return Map.of(
@@ -88,14 +89,14 @@ public class HelloController {
 
     // Legacy endpoints (kept for backward compatibility, now require authentication)
     @GetMapping("/hello")
-    @PreAuthorize("hasAnyRole('nexus-user', 'nexus-manager', 'nexus-admin')")
+    @PreAuthorize("hasAnyRole('users', 'app-admins', 'platform-admins')")
     @Loggable(description = "Get hello world message (legacy endpoint)")
     public Greeting hello() {
         return helloService.getHelloMessage();
     }
 
     @GetMapping("/hello/custom")
-    @PreAuthorize("hasAnyRole('nexus-user', 'nexus-manager', 'nexus-admin')")
+    @PreAuthorize("hasAnyRole('users', 'app-admins', 'platform-admins')")
     @Loggable(description = "Get custom greeting message (legacy endpoint)")
     public Greeting customHello(@RequestParam String name) {
         return helloService.getCustomGreeting(name);

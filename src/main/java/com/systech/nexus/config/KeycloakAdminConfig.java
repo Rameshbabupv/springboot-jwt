@@ -65,4 +65,31 @@ public class KeycloakAdminConfig {
                 .password(password)
                 .build();
     }
+
+    /**
+     * Get the configured realm name.
+     *
+     * @return the realm name
+     * @since 1.0
+     */
+    public String getRealm() {
+        return realm;
+    }
+
+    /**
+     * Get a new Keycloak admin client instance.
+     *
+     * @return new Keycloak admin client
+     * @since 1.0
+     */
+    public Keycloak getKeycloakAdminClient() {
+        return KeycloakBuilder.builder()
+                .serverUrl(serverUrl)
+                .realm("master") // Admin operations use master realm
+                .grantType(OAuth2Constants.PASSWORD)
+                .clientId(clientId)
+                .username(username)
+                .password(password)
+                .build();
+    }
 }
