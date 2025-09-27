@@ -28,7 +28,7 @@ echo ""
 echo "🧪 Testing endpoints:"
 
 echo -n "  Public:  "
-curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/hello/public
+curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/public/hello
 
 echo -n "  User:    "
 curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/user/hello
