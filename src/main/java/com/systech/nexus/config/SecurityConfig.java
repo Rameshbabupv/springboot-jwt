@@ -38,8 +38,8 @@ import java.util.Map;
  * - Method-level security annotations support
  *
  * Single Client Architecture:
- * - React frontend uses nexus-web-app client for authentication
- * - Spring Boot validates JWT tokens from nexus-web-app client
+ * - React frontend uses systech-hrms-client for authentication
+ * - Spring Boot validates JWT tokens from systech-hrms-client
  * - No client secret needed for token validation (uses public keys)
  *
  * @author Claude

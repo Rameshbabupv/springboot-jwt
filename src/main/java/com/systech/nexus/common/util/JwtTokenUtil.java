@@ -25,7 +25,7 @@ import java.util.Map;
  * - Null-safe operations with proper fallbacks
  *
  * Single Client Architecture:
- * - All tokens come from nexus-web-app client
+ * - All tokens come from systech-hrms-client
  * - Contains user information and roles from Keycloak
  * - Supports realm roles: nexus-admin, nexus-manager, nexus-user, nexus-viewer
  *
