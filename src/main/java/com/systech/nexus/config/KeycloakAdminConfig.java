@@ -30,7 +30,7 @@ import org.springframework.context.annotation.Profile;
  * @since 1.0
  */
 @Configuration
-@Profile("dev")
+@Profile({"dev", "test"})
 public class KeycloakAdminConfig {
 
     @Value("${keycloak.admin.server-url:http://localhost:8090}")

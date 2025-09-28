@@ -185,14 +185,16 @@ Questions:
 1. where do we keep changelog about the class. I usually keep on the top of the class about the change log. so that we know what changes the class has gone thorugh . Please let me know your thinking and think hard 
 
 
-│ # 1. Get JWT Token                                                                                                                                        │ │
-│ │ curl -X POST http://localhost:8090/realms/nexus-dev/protocol/openid-connect/token \                                                                       │ │
-│ │   -d "grant_type=password&client_id=nexus-web-app&username=nexus-user&password=nexus123"                                                                  │ │
-│ │                                                                                                                                                           │ │
-│ │ # 2. Test Protected GraphQL                                                                                                                               │ │
-│ │ curl -X POST http://localhost:8080/graphql \                                                                                                              │ │
-│ │   -H "Authorization: Bearer YOUR_JWT_TOKEN" \                                                                                                             │ │
-│ │   -d '{"query": "{ users { id name email } }"}'     
+
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
+mvn clean compile
+
+curl http://localhost:8080/api/hello/public
+curl -m 5 http://localhost:8080/actuator/health
+curl -m 5 http://localhost:8090/realms/systech/.well-known/openid_configuration | jq '.issuer'
+curl -v http://localhost:8090/realms/systech/.well-known/openid_configuration
+can 
 
 
-
+mvn test -Dtest="com.systech.nexus.company.*"
+mvn compile -q

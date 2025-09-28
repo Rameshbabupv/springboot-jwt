@@ -1,8 +1,8 @@
 
-# Implementation Plan: [FEATURE]
+# Implementation Plan: PostgreSQL Company Master CRUD Operations
 
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
-**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
+**Branch**: `002-next-we-are` | **Date**: 2025-09-27 | **Spec**: [spec.md](./spec.md)
+**Input**: Feature specification from `/specs/002-next-we-are/spec.md`
 
 ## Execution Flow (/plan command scope)
 ```
@@ -31,23 +31,43 @@
 - Phase 3-4: Implementation execution (manual or via tools)
 
 ## Summary
-[Extract from feature spec: primary requirement + technical approach from research]
+PostgreSQL Company Master CRUD operations via GraphQL endpoints. Simple entity with name, registration number, active status, and audit trail. Admin-only access using existing JWT authentication. Keep implementation minimal and focused.
 
 ## Technical Context
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
-**Project Type**: [single/web/mobile - determines source structure]  
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Language/Version**: Java 17 with Spring Boot 3.2.0
+**Primary Dependencies**: DGS Framework 8.1.1, Spring Data JPA, PostgreSQL driver
+**Storage**: PostgreSQL database (DBA-managed infrastructure)
+**Testing**: JUnit 5, Spring Boot Test, DGS Test Framework
+**Target Platform**: Linux server (containerized Spring Boot application)
+**Project Type**: Single backend service extending existing monolith
+**Performance Goals**: Standard CRUD operations, no specific performance targets
+**Constraints**: Keep simple, admin-only access, use existing frameworks only
+**Scale/Scope**: Company master data management, estimated <1000 companies
 
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+### GitFlow Compliance
+- [x] **Feature Branch**: Using `002-next-we-are` (proper feature branch)
+- [x] **No Direct Main Commits**: Working on feature branch only
+- [x] **Testing Required**: Will implement `mvn test` before commits
+- [x] **Application Startup**: Will verify `mvn spring-boot:run` works
+
+### Technical Standards Compliance
+- [x] **Maven Build System**: Using existing Maven (no Gradle changes)
+- [x] **DGS Framework**: Using existing DGS 8.1.1 for GraphQL
+- [x] **Spring Boot 3.2.0**: Using existing Spring Boot version
+- [x] **No Framework Changes**: No ADR required - using existing stack
+- [x] **TDD Approach**: Will implement tests before code
+- [x] **Documentation**: Will update docs/features/ as required
+
+### Role Boundaries Compliance
+- [x] **Backend Developer Role**: Application code only
+- [x] **No DB Infrastructure**: Will request schema from DBA
+- [x] **No Container Operations**: No server start/stop operations
+- [x] **No File Deletion**: Will use rename pattern if needed
+
+**STATUS**: ✅ PASS - All constitutional requirements met
 
 ## Project Structure
 
@@ -63,50 +83,34 @@ specs/[###-feature]/
 ```
 
 ### Source Code (repository root)
-<!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
--->
 ```
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
+src/main/java/com/systech/nexus/
+├── company/                    # NEW: Company module
+│   ├── domain/
+│   │   └── Company.java        # JPA Entity
+│   ├── repository/
+│   │   └── CompanyRepository.java
+│   ├── service/
+│   │   └── CompanyService.java
+│   └── graphql/
+│       └── CompanyDataFetcher.java
+├── config/                     # EXISTING: Shared configuration
+├── common/                     # EXISTING: Common utilities
+└── NexusApplication.java       # EXISTING: Main application
 
-tests/
-├── contract/
-├── integration/
-└── unit/
+src/main/resources/
+├── schema/
+│   └── company.graphqls        # NEW: GraphQL schema
+└── application.yml             # EXISTING: Updated for PostgreSQL
 
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+src/test/java/com/systech/nexus/
+└── company/                    # NEW: Company tests
+    ├── repository/
+    ├── service/
+    └── graphql/
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+**Structure Decision**: Extending existing Spring Boot monolith with new `company` module. Following established patterns from existing `greeting` and `user` modules. No new frameworks or architectural changes required.
 
 ## Phase 0: Outline & Research
 1. **Extract unknowns from Technical Context** above:
@@ -167,18 +171,30 @@ directories captured above]
 
 **Task Generation Strategy**:
 - Load `.specify/templates/tasks-template.md` as base
-- Generate tasks from Phase 1 design docs (contracts, data model, quickstart)
-- Each contract → contract test task [P]
-- Each entity → model creation task [P] 
-- Each user story → integration test task
-- Implementation tasks to make tests pass
+- Generate tasks from Phase 1 design artifacts (data-model.md, contracts/company.graphqls, quickstart.md)
+- Database schema request for DBA
+- JPA entity creation with audit support
+- Repository interface with custom queries
+- Service layer with business logic
+- GraphQL DataFetcher with security annotations
+- Comprehensive test coverage (unit + integration)
 
 **Ordering Strategy**:
-- TDD order: Tests before implementation 
-- Dependency order: Models before services before UI
-- Mark [P] for parallel execution (independent files)
+- TDD order: Contract tests → Implementation → Integration tests
+- Dependency order: Database → Entity → Repository → Service → GraphQL
+- Mark [P] for parallel execution where files are independent
+- Security configuration setup early in sequence
 
-**Estimated Output**: 25-30 numbered, ordered tasks in tasks.md
+**Specific Task Categories**:
+1. **Database Tasks**: Request schema from DBA
+2. **Entity Tasks [P]**: JPA entity with validation and audit
+3. **Repository Tasks [P]**: Spring Data JPA repository interface
+4. **Service Tasks**: Business logic with transaction management
+5. **GraphQL Tasks**: DataFetcher with role-based security
+6. **Test Tasks**: Contract tests, unit tests, integration tests
+7. **Configuration Tasks**: Application properties updates
+
+**Estimated Output**: 15-20 numbered, ordered tasks in tasks.md (keeping it simple as requested)
 
 **IMPORTANT**: This phase is executed by the /tasks command, NOT by /plan
 
@@ -202,18 +218,18 @@ directories captured above]
 *This checklist is updated during execution flow*
 
 **Phase Status**:
-- [ ] Phase 0: Research complete (/plan command)
-- [ ] Phase 1: Design complete (/plan command)
-- [ ] Phase 2: Task planning complete (/plan command - describe approach only)
+- [x] Phase 0: Research complete (/plan command)
+- [x] Phase 1: Design complete (/plan command)
+- [x] Phase 2: Task planning complete (/plan command - describe approach only)
 - [ ] Phase 3: Tasks generated (/tasks command)
 - [ ] Phase 4: Implementation complete
 - [ ] Phase 5: Validation passed
 
 **Gate Status**:
-- [ ] Initial Constitution Check: PASS
-- [ ] Post-Design Constitution Check: PASS
-- [ ] All NEEDS CLARIFICATION resolved
-- [ ] Complexity deviations documented
+- [x] Initial Constitution Check: PASS
+- [x] Post-Design Constitution Check: PASS
+- [x] All NEEDS CLARIFICATION resolved
+- [x] Complexity deviations documented (none required - simple approach)
 
 ---
 *Based on Constitution v2.1.1 - See `/memory/constitution.md`*
