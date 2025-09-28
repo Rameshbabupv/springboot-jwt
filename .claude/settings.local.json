@@ -70,7 +70,9 @@
       "mcp__serena__insert_after_symbol",
       "Bash(timeout 15 mvn spring-boot:run:*)",
       "Bash(git config:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(git log:*)",
+      "Bash(git fetch:*)"
     ],
     "deny": [],
     "ask": []
