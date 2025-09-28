@@ -1,41 +1,46 @@
 #!/usr/bin/env python3
 """
-Simple Keycloak User Creation Script
+Create Keycloak Users for v2_quick_test.py
 
-Creates the missing test users directly via Keycloak Admin API:
-- user (users group)
-- app-admin (app-admins group)
+Creates the required users in systech realm:
+- basic_user (password: systech@123)
+- appadmin (password: systech@123)
+- babu.systech (password: systech@123)
 
 Author: Claude
 """
 
 import requests
 import json
-import sys
 
 # Configuration
 KEYCLOAK_URL = "http://localhost:8090"
 REALM = "systech"
 ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "admin"  # Default Keycloak admin password
+ADMIN_PASSWORD = "secret"
 
-# Users to create
+# Users to create (matching v2_quick_test.py expectations)
 USERS_TO_CREATE = [
     {
         "username": "basic_user",
         "password": "systech@123",
         "email": "basic_user@systech.com",
         "firstName": "Basic",
-        "lastName": "User",
-        "groups": ["users"]
+        "lastName": "User"
     },
     {
-        "username": "app-admin",
+        "username": "appadmin",
         "password": "systech@123",
-        "email": "app-admin@systech.com",
+        "email": "appadmin@systech.com",
         "firstName": "App",
-        "lastName": "Admin",
-        "groups": ["app-admins"]
+        "lastName": "Admin"
+    },
+    {
+        "username": "babu.systech",
+        "password": "systech@123",
+        "email": "babu@systech.com",
+        "firstName": "Babu",
+        "lastName": "Systech"
     }
 ]
 
@@ -56,13 +61,14 @@ def get_admin_token():
             return response.json().get("access_token")
         else:
             print(f"❌ Failed to get admin token: HTTP {response.status_code}")
+            print(f"   Response: {response.text}")
             return None
     except Exception as e:
         print(f"❌ Error getting admin token: {e}")
         return None
 
 def create_user(admin_token, user_data):
-    """Create a single user in Keycloak."""
+    """Create a single user in Keycloak realm."""
     url = f"{KEYCLOAK_URL}/admin/realms/{REALM}/users"
 
     headers = {
@@ -76,11 +82,12 @@ def create_user(admin_token, user_data):
         "firstName": user_data["firstName"],
         "lastName": user_data["lastName"],
         "enabled": True,
+        "emailVerified": True,
         "credentials": [{
             "type": "password",
             "value": user_data["password"],
             "temporary": False
-        }]1
+        }]
     }
 
     try:
@@ -101,21 +108,17 @@ def create_user(admin_token, user_data):
 
 def main():
     """Main execution."""
-    print("🔧 Creating Keycloak Test Users")
-    print("=" * 40)
+    print("🔧 Creating Keycloak Users for v2_quick_test.py")
+    print("=" * 50)
 
     # Get admin token
     admin_token = get_admin_token()
     if not admin_token:
         print("❌ Could not authenticate with Keycloak admin")
-        print("\nTry manually creating users in Keycloak admin console:")
-        print("1. Go to http://localhost:8090/admin")
-        print("2. Login with admin/admin")
-        print("3. Select 'systech' realm")
-        print("4. Go to Users > Add User")
-        print("5. Create these users:")
-        for user in USERS_TO_CREATE:
-            print(f"   - {user['username']} (password: {user['password']})")
+        print("\nTroubleshooting:")
+        print("1. Check that Keycloak is running: http://localhost:8090")
+        print("2. Verify admin credentials: admin/secret")
+        print("3. Check if systech realm exists")
         return
 
     print("✅ Admin token obtained")

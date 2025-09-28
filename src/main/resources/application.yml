@@ -64,7 +64,7 @@ keycloak:
     realm: systech
     client-id: admin-cli
     username: admin
-    password: admin
+    password: secret
 
 # Development-specific logging (more verbose for security debugging)
 logging:

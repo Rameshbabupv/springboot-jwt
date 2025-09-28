@@ -51,7 +51,7 @@ public class KeycloakUserService {
     @Autowired
     private Keycloak keycloakAdminClient;
 
-    @Value("${keycloak.admin.realm:nexus-dev}")
+    @Value("${keycloak.admin.realm:systech}")
     private String realm;
 
     /**
