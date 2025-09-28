@@ -1,0 +1,157 @@
+# Company Master GraphQL Schema
+# Version: 1.0
+# Author: Backend Developer
+# Last Updated: 2025-09-27
+
+"""
+Company Master entity representing organizational information.
+Access restricted to app-admins and platform-admins roles only.
+"""
+type Company {
+    "Unique identifier for the company"
+    id: ID!
+
+    "Company's legal name"
+    companyName: String!
+
+    "Official registration number (unique)"
+    registrationNumber: String!
+
+    "Whether the company is active or disabled"
+    active: Boolean!
+
+    "Timestamp when company was created"
+    createdDate: String!
+
+    "Timestamp when company was last modified"
+    modifiedDate: String!
+
+    "Username who created the company"
+    createdBy: String!
+
+    "Username who last modified the company"
+    modifiedBy: String!
+}
+
+"""
+Input for creating a new company record.
+All fields except active are required.
+"""
+input CreateCompanyInput {
+    "Company's legal name (required, max 255 chars)"
+    companyName: String!
+
+    "Official registration number (required, unique, max 100 chars)"
+    registrationNumber: String!
+
+    "Whether company should be active (defaults to true)"
+    active: Boolean = true
+}
+
+"""
+Input for updating an existing company record.
+Only provided fields will be updated.
+"""
+input UpdateCompanyInput {
+    "Company's legal name (max 255 chars)"
+    companyName: String
+
+    "Official registration number (unique, max 100 chars)"
+    registrationNumber: String
+
+    "Whether company is active"
+    active: Boolean
+}
+
+"""
+Search criteria for filtering companies.
+All fields are optional and combined with AND logic.
+"""
+input CompanySearchInput {
+    "Filter by company name (case-insensitive partial match)"
+    companyName: String
+
+    "Filter by exact registration number"
+    registrationNumber: String
+
+    "Filter by active status"
+    active: Boolean
+}
+
+"""
+Bulk import input for initial data loading.
+Contains list of companies to import.
+"""
+input BulkImportCompaniesInput {
+    "List of companies to import"
+    companies: [CreateCompanyInput!]!
+}
+
+"""
+Result of bulk import operation.
+"""
+type BulkImportResult {
+    "Number of companies successfully imported"
+    successCount: Int!
+
+    "Number of companies that failed to import"
+    failureCount: Int!
+
+    "List of error messages for failed imports"
+    errors: [String!]!
+}
+
+# Query Operations (Read)
+extend type Query {
+    """
+    Get all companies with optional filtering.
+    Requires app-admins or platform-admins role.
+    """
+    companies(search: CompanySearchInput): [Company!]!
+
+    """
+    Get a specific company by ID.
+    Requires app-admins or platform-admins role.
+    """
+    company(id: ID!): Company
+
+    """
+    Search companies by name or registration number.
+    Requires app-admins or platform-admins role.
+    """
+    searchCompanies(searchTerm: String!): [Company!]!
+}
+
+# Mutation Operations (Create, Update, Delete)
+extend type Mutation {
+    """
+    Create a new company record.
+    Requires app-admins or platform-admins role.
+    """
+    createCompany(input: CreateCompanyInput!): Company!
+
+    """
+    Update an existing company record.
+    Requires app-admins or platform-admins role.
+    """
+    updateCompany(id: ID!, input: UpdateCompanyInput!): Company!
+
+    """
+    Disable a company (soft delete).
+    Company will be marked as inactive but remain in system.
+    Requires app-admins or platform-admins role.
+    """
+    disableCompany(id: ID!): Company!
+
+    """
+    Reactivate a disabled company.
+    Requires app-admins or platform-admins role.
+    """
+    reactivateCompany(id: ID!): Company!
+
+    """
+    Bulk import companies for initial data loading.
+    Requires app-admins or platform-admins role.
+    """
+    bulkImportCompanies(input: BulkImportCompaniesInput!): BulkImportResult!
+}

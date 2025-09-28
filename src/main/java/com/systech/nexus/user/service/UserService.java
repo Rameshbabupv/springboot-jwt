@@ -61,7 +61,7 @@ public class UserService {
     @Transactional(readOnly = true)
     @Loggable(description = "Get user by email")
     public Optional<User> getUserByEmail(String email) {
-        return userRepository.findByEmailIgnoreCase(email);
+        return userRepository.findByEmailAddressIgnoreCase(email);
     }
 
     @Transactional
@@ -72,11 +72,11 @@ public class UserService {
             throw new DataIntegrityViolationException("Username '" + username + "' already exists");
         }
 
-        if (userRepository.existsByEmailIgnoreCase(email)) {
+        if (userRepository.existsByEmailAddressIgnoreCase(email)) {
             throw new DataIntegrityViolationException("Email '" + email + "' already exists");
         }
 
-        User newUser = new User(username, email, firstName, lastName);
+        User newUser = new User(1L, username, email, firstName, lastName);
         return userRepository.save(newUser);
     }
 
@@ -93,8 +93,8 @@ public class UserService {
             }
         }
 
-        if (email != null && !email.equalsIgnoreCase(existingUser.getEmail())) {
-            if (userRepository.existsByEmailIgnoreCase(email)) {
+        if (email != null && !email.equalsIgnoreCase(existingUser.getEmailAddress())) {
+            if (userRepository.existsByEmailAddressIgnoreCase(email)) {
                 throw new DataIntegrityViolationException("Email '" + email + "' already exists");
             }
         }
@@ -102,7 +102,7 @@ public class UserService {
         // Create update object with only non-null values
         User updateData = new User();
         updateData.setUsername(username);
-        updateData.setEmail(email);
+        updateData.setEmailAddress(email);
         updateData.setFirstName(firstName);
         updateData.setLastName(lastName);
 
@@ -141,7 +141,7 @@ public class UserService {
     @Transactional(readOnly = true)
     @Loggable(description = "Check if email exists")
     public boolean emailExists(String email) {
-        return userRepository.existsByEmailIgnoreCase(email);
+        return userRepository.existsByEmailAddressIgnoreCase(email);
     }
 
     @Transactional(readOnly = true)

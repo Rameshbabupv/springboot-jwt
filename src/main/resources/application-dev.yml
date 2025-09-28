@@ -8,9 +8,9 @@ spring:
         jwt:
           # For development, we'll use the Keycloak instance from podman configuration
           # This will be used when Keycloak is available
-          issuer-uri: http://localhost:8090/realms/nexus-dev
+          issuer-uri: http://localhost:8090/realms/systech
           # Allow startup without Keycloak by disabling eager validation
-          jwk-set-uri: http://localhost:8090/realms/nexus-dev/protocol/openid-connect/certs
+          jwk-set-uri: http://localhost:8090/realms/systech/protocol/openid-connect/certs
 
 # CORS Configuration for React Frontend (Development)
 nexus:
@@ -36,7 +36,7 @@ nexus:
 keycloak:
   admin:
     server-url: http://localhost:8090
-    realm: nexus-dev
+    realm: systech
     client-id: admin-cli
     username: admin
     password: admin

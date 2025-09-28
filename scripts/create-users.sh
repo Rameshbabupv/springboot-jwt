@@ -7,8 +7,8 @@
 set -e
 
 KEYCLOAK_URL="http://localhost:8090"
-REALM="nexus-dev"
-CLIENT_ID="nexus-web-app"
+REALM="systech"
+CLIENT_ID="systech-hrms-client"
 API_BASE="http://localhost:8080"
 
 # Colors
@@ -23,11 +23,11 @@ echo -e "${BLUE}🔧 Creating Keycloak Users via Spring Boot API${NC}"
 echo "Getting admin token..."
 ADMIN_TOKEN=$(curl -s -X POST "${KEYCLOAK_URL}/realms/${REALM}/protocol/openid-connect/token" \
   -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "grant_type=password&client_id=${CLIENT_ID}&username=nexus-admin&password=nexus123" | \
+  -d "grant_type=password&client_id=${CLIENT_ID}&username=babu.systech&password=systech@123" | \
   python3 -c "import sys, json; data=json.load(sys.stdin); print(data.get('access_token', 'ERROR'))" 2>/dev/null)
 
 if [ "$ADMIN_TOKEN" = "ERROR" ] || [ -z "$ADMIN_TOKEN" ]; then
-    echo -e "${RED}❌ Could not get admin token. Make sure nexus-admin user exists.${NC}"
+    echo -e "${RED}❌ Could not get admin token. Make sure babu.systech user exists.${NC}"
     echo "You can create users manually in Keycloak first, or use the startup runner."
     exit 1
 fi
@@ -53,7 +53,7 @@ fi
 echo ""
 echo "Checking user existence..."
 
-for user in nexus-user nexus-manager nexus-admin; do
+for user in babu.systech; do
     echo -n "  $user: "
     EXISTS=$(curl -s "${API_BASE}/api/admin/users/${user}/exists" \
       -H "Authorization: Bearer $ADMIN_TOKEN" | \

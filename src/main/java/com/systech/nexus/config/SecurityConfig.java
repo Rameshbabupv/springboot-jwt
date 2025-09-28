@@ -38,8 +38,8 @@ import java.util.Map;
  * - Method-level security annotations support
  *
  * Single Client Architecture:
- * - React frontend uses nexus-web-app client for authentication
- * - Spring Boot validates JWT tokens from nexus-web-app client
+ * - React frontend uses systech-hrms-client for authentication
+ * - Spring Boot validates JWT tokens from systech-hrms-client
  * - No client secret needed for token validation (uses public keys)
  *
  * @author Claude
@@ -89,10 +89,10 @@ public class SecurityConfig {
                 .requestMatchers("/graphiql/**").permitAll() // GraphQL IDE for development
                 .requestMatchers("/h2-console/**").permitAll() // H2 database console
 
-                // Role-based access control
-                .requestMatchers("/api/admin/**").hasRole("nexus-admin")
-                .requestMatchers("/api/manager/**").hasAnyRole("nexus-admin", "nexus-manager")
-                .requestMatchers("/api/user/**").hasAnyRole("nexus-admin", "nexus-manager", "nexus-user")
+                // Group-based access control (Keycloak groups)
+                .requestMatchers("/api/admin/**").hasRole("platform-admins")
+                .requestMatchers("/api/manager/**").hasAnyRole("platform-admins", "app-admins")
+                .requestMatchers("/api/user/**").hasAnyRole("platform-admins", "app-admins", "users")
 
                 // GraphQL endpoint (requires authentication)
                 .requestMatchers("/graphql").authenticated()
@@ -126,17 +126,39 @@ public class SecurityConfig {
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
 
-        // Custom authorities converter for Keycloak realm_access.roles
+        // Custom authorities converter for Keycloak groups
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
             Collection<GrantedAuthority> authorities = new ArrayList<>();
 
-            // Extract realm roles
+            // Extract groups claim (if present)
+            @SuppressWarnings("unchecked")
+            List<String> groups = jwt.getClaimAsStringList("groups");
+            if (groups != null) {
+                for (String group : groups) {
+                    authorities.add(new SimpleGrantedAuthority("ROLE_" + group));
+                }
+            }
+
+            // Extract realm roles and map to expected groups
             Map<String, Object> realmAccess = jwt.getClaimAsMap("realm_access");
             if (realmAccess != null && realmAccess.containsKey("roles")) {
                 @SuppressWarnings("unchecked")
                 List<String> roles = (List<String>) realmAccess.get("roles");
                 for (String role : roles) {
+                    // Add original role with ROLE_ prefix
                     authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
+
+                    // Map Keycloak realm roles to expected group authorities
+                    if ("platform-admins".equals(role)) {
+                        authorities.add(new SimpleGrantedAuthority("ROLE_platform-admins"));
+                        authorities.add(new SimpleGrantedAuthority("ROLE_app-admins"));
+                        authorities.add(new SimpleGrantedAuthority("ROLE_basic-users"));
+                    } else if ("app-admins".equals(role)) {
+                        authorities.add(new SimpleGrantedAuthority("ROLE_app-admins"));
+                        authorities.add(new SimpleGrantedAuthority("ROLE_basic-users"));
+                    } else if ("basic-users".equals(role)) {
+                        authorities.add(new SimpleGrantedAuthority("ROLE_basic-users"));
+                    }
                 }
             }
 

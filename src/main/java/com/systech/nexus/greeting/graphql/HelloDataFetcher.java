@@ -9,18 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 @DgsComponent
 public class HelloDataFetcher {
 
-    @Autowired
-    private HelloService helloService;
+    // Public GraphQL queries removed - all GraphQL operations now require authentication
+    // Hello and custom greeting functionality moved to REST API at /api/public/hello
 
-    @DgsQuery
-    @Loggable(description = "GraphQL hello query")
-    public String hello() {
-        return helloService.getHelloMessage().getMessage();
-    }
-
-    @DgsQuery
-    @Loggable(description = "GraphQL custom greeting query")
-    public String customGreeting(String name) {
-        return helloService.getCustomGreeting(name).getMessage();
-    }
 }

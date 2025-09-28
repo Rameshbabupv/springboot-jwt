@@ -30,9 +30,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUsername(String username);
 
     /**
-     * Find user by email (case-insensitive)
+     * Find user by email address (case-insensitive)
      */
-    Optional<User> findByEmailIgnoreCase(String email);
+    Optional<User> findByEmailAddressIgnoreCase(String emailAddress);
 
     /**
      * Check if username exists (case-sensitive)
@@ -40,9 +40,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByUsername(String username);
 
     /**
-     * Check if email exists (case-insensitive)
+     * Check if email address exists (case-insensitive)
      */
-    boolean existsByEmailIgnoreCase(String email);
+    boolean existsByEmailAddressIgnoreCase(String emailAddress);
 
     /**
      * Find users by first name or last name containing the search term (case-insensitive)

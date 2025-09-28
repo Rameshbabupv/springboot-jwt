@@ -25,9 +25,9 @@ import java.util.Map;
  * - Null-safe operations with proper fallbacks
  *
  * Single Client Architecture:
- * - All tokens come from nexus-web-app client
+ * - All tokens come from systech-hrms-client
  * - Contains user information and roles from Keycloak
- * - Supports realm roles: nexus-admin, nexus-manager, nexus-user, nexus-viewer
+ * - Supports Keycloak groups: platform-admins, app-admins, users
  *
  * @author Claude
  * @version 1.0
@@ -97,6 +97,22 @@ public class JwtTokenUtil {
     }
 
     /**
+     * Get all groups for the current user.
+     *
+     * @return list of groups from groups claim, or empty list if not authenticated
+     * @since 1.0
+     */
+    public List<String> getCurrentUserGroups() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication instanceof JwtAuthenticationToken jwtAuth) {
+            Jwt jwt = jwtAuth.getToken();
+            List<String> groups = jwt.getClaimAsStringList("groups");
+            return groups != null ? groups : List.of();
+        }
+        return List.of();
+    }
+
+    /**
      * Get all realm roles for the current user.
      *
      * @return list of roles from realm_access.roles claim, or empty list if not authenticated
@@ -160,21 +176,73 @@ public class JwtTokenUtil {
     }
 
     /**
-     * Check if the current user is an admin.
+     * Check if the current user has a specific group.
      *
-     * @return true if user has nexus-admin role, false otherwise
+     * @param group the group name to check
+     * @return true if user has the group, false otherwise
      * @since 1.0
      */
+    public boolean hasGroup(String group) {
+        return getCurrentUserGroups().contains(group);
+    }
+
+    /**
+     * Check if the current user has any of the specified groups.
+     *
+     * @param groups the group names to check
+     * @return true if user has any of the groups, false otherwise
+     * @since 1.0
+     */
+    public boolean hasAnyGroup(String... groups) {
+        List<String> userGroups = getCurrentUserGroups();
+        for (String group : groups) {
+            if (userGroups.contains(group)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if the current user is a platform admin.
+     *
+     * @return true if user has platform-admins group, false otherwise
+     * @since 1.0
+     */
+    public boolean isPlatformAdmin() {
+        return hasGroup("platform-admins");
+    }
+
+    /**
+     * Check if the current user is an app admin or platform admin.
+     *
+     * @return true if user has app-admins or platform-admins group, false otherwise
+     * @since 1.0
+     */
+    public boolean isAppAdminOrHigher() {
+        return hasAnyGroup("app-admins", "platform-admins");
+    }
+
+    /**
+     * Check if the current user is an admin (legacy method - checks old role names).
+     *
+     * @return true if user has nexus-admin role, false otherwise
+     * @deprecated Use isPlatformAdmin() instead
+     * @since 1.0
+     */
+    @Deprecated
     public boolean isAdmin() {
         return hasRole("nexus-admin");
     }
 
     /**
-     * Check if the current user is a manager or admin.
+     * Check if the current user is a manager or admin (legacy method).
      *
      * @return true if user has nexus-manager or nexus-admin role, false otherwise
+     * @deprecated Use isAppAdminOrHigher() instead
      * @since 1.0
      */
+    @Deprecated
     public boolean isManagerOrAdmin() {
         return hasAnyRole("nexus-manager", "nexus-admin");
     }

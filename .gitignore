@@ -1,1 +1,21 @@
 logs/*.log
+# Maven
+target/
+*.log
+*.gz
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# JWT tokens
+token_response*.json
+
+# Temporary files
+*.tmp
+*.temp

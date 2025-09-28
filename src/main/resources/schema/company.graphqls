@@ -1,0 +1,247 @@
+# Company Management GraphQL Schema
+#
+# This schema defines the Company entity and its related operations for the GraphQL API.
+# It provides comprehensive CRUD operations with admin-only access control and audit trails.
+#
+# Features:
+# - Complete Company type definition with audit fields
+# - Input types for create, update, and bulk import operations
+# - Search and filtering capabilities with multiple criteria
+# - Soft delete operations (disable/reactivate)
+# - Bulk import functionality with detailed result reporting
+# - Admin-only access (app-admins and platform-admins roles required)
+# - Full audit trail with timestamps and user tracking
+#
+# Author: Backend Developer
+# Version: 1.0
+# Last Updated: 2025-09-27
+
+"""
+Company entity representing a company master record in the system.
+Contains all non-null fields from company_master table with comprehensive company information.
+Access restricted to admin users only (app-admins and platform-admins).
+"""
+type Company {
+    "Unique identifier for the company"
+    id: ID!
+
+    # === USER INPUT REQUIRED FIELDS ===
+    "Unique company code (20 characters, required)"
+    companyCode: String!
+    "Company name (200 characters, required)"
+    companyName: String!
+    "Company short name (50 characters, required)"
+    companyShortName: String!
+    "Registered address (required)"
+    registeredAddress: String!
+    "Primary email address (150 characters, required)"
+    primaryEmail: String!
+
+    # === REQUIRED FOREIGN KEY ===
+    "Registered country ID (references country_master)"
+    registeredCountryId: ID!
+    "Country name (resolved from registeredCountryId)"
+    country: String!
+
+    # === FIELDS WITH DATABASE DEFAULTS ===
+    "Company type (default: PRIVATE_LIMITED)"
+    companyType: String!
+    "Financial year start month (1-12, default: 4)"
+    financialYearStartMonth: Int!
+    "Financial year end month (1-12, default: 3)"
+    financialYearEndMonth: Int!
+    "Default currency code (3 characters, default: INR)"
+    defaultCurrencyCode: String!
+    "Default timezone (default: Asia/Kolkata)"
+    defaultTimezone: String!
+    "Default language (default: en)"
+    defaultLanguage: String!
+    "Date format (default: DD-MM-YYYY)"
+    dateFormat: String!
+    "Time format (default: 24_HOUR)"
+    timeFormat: String!
+    "Multi-location flag (default: false)"
+    isMultiLocation: Boolean!
+    "Multi-currency flag (default: false)"
+    isMultiCurrency: Boolean!
+    "Subscription plan (default: STANDARD)"
+    subscriptionPlan: String!
+    "License type (default: PERPETUAL)"
+    licenseType: String!
+    "Company status (default: ACTIVE)"
+    companyStatus: String!
+    "Trial flag (default: false)"
+    isTrial: Boolean!
+    "Demo flag (default: false)"
+    isDemo: Boolean!
+    "Biometric integration flag (default: false)"
+    enableBiometricIntegration: Boolean!
+    "Mobile app flag (default: true)"
+    enableMobileApp: Boolean!
+    "Self service flag (default: true)"
+    enableSelfService: Boolean!
+    "Workflow approvals flag (default: true)"
+    enableWorkflowApprovals: Boolean!
+    "Audit logging flag (default: true)"
+    enableAuditLogging: Boolean!
+    "Data encryption flag (default: true)"
+    enableDataEncryption: Boolean!
+
+    # === AUDIT FIELDS (AUTO-POPULATED) ===
+    "ISO 8601 timestamp when the company was created"
+    createdAt: String!
+    "ISO 8601 timestamp when the company was last modified"
+    modifiedAt: String!
+
+    # === LEGACY COMPATIBILITY FIELDS ===
+    "Legacy: Registration number (maps to companyCode)"
+    registrationNumber: String!
+    "Legacy: Created date (maps to createdAt)"
+    createdDate: String!
+    "Legacy: Modified date (maps to modifiedAt)"
+    modifiedDate: String!
+}
+
+"""
+Input type for creating a new company.
+All required fields must be provided and will be validated for uniqueness and format.
+"""
+input CreateCompanyInput {
+    "Company name (required, 2-200 characters)"
+    companyName: String!
+    "Registration number (required, 3-50 characters, must be unique)"
+    registrationNumber: String!
+    "Active status (optional, defaults to true)"
+    active: Boolean
+}
+
+"""
+Input type for updating an existing company.
+All fields are optional - only provided fields will be updated (partial update).
+Registration number uniqueness will be validated if changed.
+"""
+input UpdateCompanyInput {
+    "New company name (2-200 characters)"
+    companyName: String
+    "New registration number (3-50 characters, must be unique)"
+    registrationNumber: String
+}
+
+"""
+Input type for searching companies with multiple optional criteria.
+All parameters are optional - null values are ignored in the search.
+"""
+input CompanySearchInput {
+    "Search term for company name (case-insensitive partial match)"
+    companyName: String
+    "Search term for registration number (case-insensitive partial match)"
+    registrationNumber: String
+    "Filter by active status (true for active, false for inactive, null for all)"
+    active: Boolean
+}
+
+"""
+Input type for single company data in bulk import operations.
+Used within BulkImportCompaniesInput to define individual company records.
+"""
+input CompanyImportInput {
+    "Company name (required, 2-200 characters)"
+    companyName: String!
+    "Registration number (required, 3-50 characters, must be unique)"
+    registrationNumber: String!
+    "Active status (optional, defaults to true)"
+    active: Boolean
+}
+
+"""
+Input type for bulk import operations containing a list of companies.
+All companies in the batch are processed atomically (all succeed or all fail).
+"""
+input BulkImportCompaniesInput {
+    "List of companies to import (required, cannot be empty)"
+    companies: [CompanyImportInput!]!
+}
+
+"""
+Result type for bulk import operations providing detailed feedback.
+Contains success/failure counts and specific error messages for failed imports.
+"""
+type BulkImportResult {
+    "Number of companies successfully imported"
+    successCount: Int!
+    "Number of companies that failed to import"
+    failureCount: Int!
+    "List of error messages for failed imports (includes row numbers)"
+    errors: [String!]!
+}
+
+extend type Query {
+    """
+    Get companies with optional search criteria.
+    Returns all companies if no search criteria provided.
+    Supports filtering by company name, registration number, and active status.
+    Access: Admin only (app-admins or platform-admins)
+    """
+    companies(search: CompanySearchInput): [Company!]!
+
+    """
+    Get a specific company by its ID.
+    Returns null if company not found (not an error).
+    Returns both active and inactive companies.
+    Access: Admin only (app-admins or platform-admins)
+    """
+    company(id: ID!): Company
+
+    """
+    Search companies by text across company name and registration number.
+    Performs case-insensitive partial matching on both fields.
+    Returns empty list if no matches found.
+    Access: Admin only (app-admins or platform-admins)
+    """
+    searchCompanies(searchTerm: String!): [Company!]!
+}
+
+extend type Mutation {
+    """
+    Create a new company with the provided information.
+    Validates required fields and uniqueness of registration number.
+    Automatically sets audit fields from security context.
+    Access: Admin only (app-admins or platform-admins)
+    """
+    createCompany(input: CreateCompanyInput!): Company!
+
+    """
+    Update an existing company's information.
+    Supports partial updates - only provided fields are changed.
+    Validates uniqueness of registration number if changed.
+    Updates audit fields automatically.
+    Access: Admin only (app-admins or platform-admins)
+    """
+    updateCompany(id: ID!, input: UpdateCompanyInput!): Company!
+
+    """
+    Disable a company (soft delete).
+    Sets active status to false while preserving the record.
+    Company remains visible but marked as inactive.
+    Updates audit fields automatically.
+    Access: Admin only (app-admins or platform-admins)
+    """
+    disableCompany(id: ID!): Company!
+
+    """
+    Reactivate a disabled company.
+    Sets active status to true for previously disabled companies.
+    Updates audit fields automatically.
+    Access: Admin only (app-admins or platform-admins)
+    """
+    reactivateCompany(id: ID!): Company!
+
+    """
+    Bulk import multiple companies in a single atomic operation.
+    All imports succeed or all fail together.
+    Validates each company individually and reports detailed results.
+    Checks for duplicates within the batch and against existing records.
+    Access: Admin only (app-admins or platform-admins)
+    """
+    bulkImportCompanies(input: BulkImportCompaniesInput!): BulkImportResult!
+}

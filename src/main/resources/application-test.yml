@@ -1,0 +1,33 @@
+# Test Profile Configuration for PostgreSQL Database
+# Use this profile for testing with PostgreSQL (same as production)
+# Activate with: --spring.profiles.active=test
+
+spring:
+  datasource:
+    # PostgreSQL Database for Testing (use existing database with data)
+    url: jdbc:postgresql://localhost:5432/nexus_hrms
+    username: rameshbabu
+    password: ${POSTGRES_PASSWORD:nexus_password}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    properties:
+      hibernate:
+        default_schema: nx_core
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          lob:
+            non_contextual_creation: true
+    hibernate:
+      ddl-auto: validate  # Use existing schema and tables (no modifications)
+    show-sql: true
+
+# Test-specific logging (more verbose for debugging)
+logging:
+  level:
+    com.systech.nexus: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.orm.jpa: DEBUG
+    root: INFO
