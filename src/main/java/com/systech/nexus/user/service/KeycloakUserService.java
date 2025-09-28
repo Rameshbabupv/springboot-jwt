@@ -1,8 +1,9 @@
 package com.systech.nexus.user.service;
 
-import com.systech.nexus.config.KeycloakAdminConfig;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.admin.client.resource.RoleMappingResource;
+import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
@@ -10,6 +11,8 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import jakarta.ws.rs.core.Response;
@@ -18,101 +21,61 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Service for managing users in Keycloak.
+ * Service for managing Keycloak users programmatically.
  *
  * MAJOR CHANGES:
- * v1.0 (2025-09-27) - Initial implementation with user management operations
+ * v1.0 (2025-09-18) - Initial implementation for user management
  *
  * For complete change history: git log --follow KeycloakUserService.java
  *
  * Features:
- * - Create and manage test users for development
- * - Check user existence in Keycloak
- * - Assign roles to users (nexus-admin, nexus-manager, nexus-user)
- * - Password management for test users
- * - Error handling and logging
+ * - Create users with roles programmatically
+ * - Assign realm roles to users
+ * - Check if users exist
+ * - Set user passwords
  *
- * Test Users:
- * - nexus-user: Standard user with nexus-user role
- * - nexus-manager: Manager with nexus-manager and nexus-user roles
- * - nexus-admin: Administrator with all roles
- * - babu.systech: Default test user for systech realm
+ * Usage:
+ * - Development setup for creating test users
+ * - Can be extended for user registration features
  *
  * @author Claude
  * @version 1.0
  * @since 1.0
  */
 @Service
+@Profile("dev")
 public class KeycloakUserService {
 
     private static final Logger logger = LoggerFactory.getLogger(KeycloakUserService.class);
 
     @Autowired
-    private KeycloakAdminConfig keycloakConfig;
+    private Keycloak keycloakAdminClient;
+
+    @Value("${keycloak.admin.realm:nexus-dev}")
+    private String realm;
 
     /**
-     * Create all test users for development.
-     *
-     * @return true if all users created successfully
-     * @since 1.0
-     */
-    public boolean createTestUsers() {
-        logger.info("Creating test users in Keycloak realm: {}", keycloakConfig.getRealm());
-
-        boolean allSuccess = true;
-
-        // Create standard test users
-        allSuccess &= createUser("nexus-user", "nexus-user@example.com", "Nexus", "User", "nexus123", "nexus-user");
-        allSuccess &= createUser("nexus-manager", "nexus-manager@example.com", "Nexus", "Manager", "nexus123", "nexus-manager", "nexus-user");
-        allSuccess &= createUser("nexus-admin", "nexus-admin@example.com", "Nexus", "Admin", "nexus123", "nexus-admin", "nexus-manager", "nexus-user");
-
-        // Create systech test user
-        allSuccess &= createUser("babu.systech", "babu@systech.com", "Babu", "Systech", "nexus123", "nexus-admin", "nexus-manager", "nexus-user");
-
-        logger.info("Test users created successfully");
-        return allSuccess;
-    }
-
-    /**
-     * Check if a user exists in Keycloak.
-     *
-     * @param username the username to check
-     * @return true if user exists, false otherwise
-     * @since 1.0
-     */
-    public boolean userExists(String username) {
-        try (Keycloak keycloak = keycloakConfig.getKeycloakAdminClient()) {
-            RealmResource realmResource = keycloak.realm(keycloakConfig.getRealm());
-            UsersResource usersResource = realmResource.users();
-
-            List<UserRepresentation> users = usersResource.search(username, true);
-            return !users.isEmpty();
-        } catch (Exception e) {
-            logger.error("Error checking if user exists: {}", e.getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Create a user with specified details and roles.
+     * Create a user with specified roles in Keycloak.
      *
      * @param username the username
-     * @param email the email address
-     * @param firstName the first name
-     * @param lastName the last name
-     * @param password the password
-     * @param roles the roles to assign
-     * @return true if user created successfully
+     * @param email the user's email
+     * @param firstName the user's first name
+     * @param lastName the user's last name
+     * @param password the user's password
+     * @param roles the roles to assign to the user
+     * @return true if user created successfully, false otherwise
      * @since 1.0
      */
-    public boolean createUser(String username, String email, String firstName, String lastName, String password, String... roles) {
-        try (Keycloak keycloak = keycloakConfig.getKeycloakAdminClient()) {
-            RealmResource realmResource = keycloak.realm(keycloakConfig.getRealm());
+    public boolean createUser(String username, String email, String firstName,
+                             String lastName, String password, String... roles) {
+        try {
+            RealmResource realmResource = keycloakAdminClient.realm(realm);
             UsersResource usersResource = realmResource.users();
 
             // Check if user already exists
-            if (userExists(username)) {
-                logger.info("User {} already exists, skipping creation", username);
+            List<UserRepresentation> existingUsers = usersResource.search(username);
+            if (!existingUsers.isEmpty()) {
+                logger.info("User {} already exists", username);
                 return true;
             }
 
@@ -125,31 +88,25 @@ public class KeycloakUserService {
             user.setEnabled(true);
             user.setEmailVerified(true);
 
-            // Create password credential
-            CredentialRepresentation credential = new CredentialRepresentation();
-            credential.setType(CredentialRepresentation.PASSWORD);
-            credential.setValue(password);
-            credential.setTemporary(false);
-            user.setCredentials(Collections.singletonList(credential));
-
             // Create user
             Response response = usersResource.create(user);
+
             if (response.getStatus() == 201) {
-                logger.info("User {} created successfully", username);
+                String userId = extractUserIdFromLocation(response.getLocation().toString());
+                logger.info("User {} created successfully with ID: {}", username, userId);
 
-                // Get the created user's ID
-                String userId = extractUserIdFromLocation(response.getLocation().getPath());
-                if (userId != null && roles.length > 0) {
-                    assignRolesToUser(realmResource, userId, roles);
-                }
+                // Set password
+                setUserPassword(userId, password);
 
-                response.close();
+                // Assign roles
+                assignRolesToUser(userId, roles);
+
                 return true;
             } else {
                 logger.error("Failed to create user {}. Status: {}", username, response.getStatus());
-                response.close();
                 return false;
             }
+
         } catch (Exception e) {
             logger.error("Error creating user {}: {}", username, e.getMessage());
             return false;
@@ -157,26 +114,49 @@ public class KeycloakUserService {
     }
 
     /**
-     * Assign roles to a user.
+     * Set password for a user.
      *
-     * @param realmResource the realm resource
+     * @param userId the user ID
+     * @param password the password to set
+     * @since 1.0
+     */
+    private void setUserPassword(String userId, String password) {
+        try {
+            RealmResource realmResource = keycloakAdminClient.realm(realm);
+            UserResource userResource = realmResource.users().get(userId);
+
+            CredentialRepresentation credential = new CredentialRepresentation();
+            credential.setType(CredentialRepresentation.PASSWORD);
+            credential.setValue(password);
+            credential.setTemporary(false);
+
+            userResource.resetPassword(credential);
+            logger.info("Password set for user ID: {}", userId);
+
+        } catch (Exception e) {
+            logger.error("Error setting password for user {}: {}", userId, e.getMessage());
+        }
+    }
+
+    /**
+     * Assign realm roles to a user.
+     *
      * @param userId the user ID
      * @param roleNames the role names to assign
      * @since 1.0
      */
-    private void assignRolesToUser(RealmResource realmResource, String userId, String... roleNames) {
+    private void assignRolesToUser(String userId, String... roleNames) {
         try {
-            UsersResource usersResource = realmResource.users();
+            RealmResource realmResource = keycloakAdminClient.realm(realm);
+            UserResource userResource = realmResource.users().get(userId);
+            RoleMappingResource roleMappingResource = userResource.roles();
 
             for (String roleName : roleNames) {
-                try {
-                    RoleRepresentation role = realmResource.roles().get(roleName).toRepresentation();
-                    usersResource.get(userId).roles().realmLevel().add(Collections.singletonList(role));
-                    logger.debug("Assigned role {} to user {}", roleName, userId);
-                } catch (Exception e) {
-                    logger.warn("Failed to assign role {} to user {}: {}", roleName, userId, e.getMessage());
-                }
+                RoleRepresentation role = realmResource.roles().get(roleName).toRepresentation();
+                roleMappingResource.realmLevel().add(Collections.singletonList(role));
+                logger.info("Assigned role {} to user ID: {}", roleName, userId);
             }
+
         } catch (Exception e) {
             logger.error("Error assigning roles to user {}: {}", userId, e.getMessage());
         }
@@ -185,15 +165,53 @@ public class KeycloakUserService {
     /**
      * Extract user ID from the location header.
      *
-     * @param locationPath the location path from response
-     * @return the user ID or null if not found
+     * @param location the location URL
+     * @return the user ID
      * @since 1.0
      */
-    private String extractUserIdFromLocation(String locationPath) {
-        if (locationPath != null) {
-            String[] parts = locationPath.split("/");
-            return parts[parts.length - 1];
+    private String extractUserIdFromLocation(String location) {
+        return location.substring(location.lastIndexOf('/') + 1);
+    }
+
+    /**
+     * Create all test users for development.
+     *
+     * @since 1.0
+     */
+    public void createTestUsers() {
+        logger.info("Creating test users for development...");
+
+        // Create nexus-user
+        createUser("nexus-user", "user@nexus.systech.com", "Nexus", "User",
+                  "nexus123", "nexus-user");
+
+        // Create nexus-manager
+        createUser("nexus-manager", "manager@nexus.systech.com", "Nexus", "Manager",
+                  "nexus123", "nexus-manager");
+
+        // Create nexus-admin
+        createUser("nexus-admin", "admin@nexus.systech.com", "Nexus", "Admin",
+                  "nexus123", "nexus-admin");
+
+        logger.info("Test users creation completed");
+    }
+
+    /**
+     * Check if user exists in Keycloak.
+     *
+     * @param username the username to check
+     * @return true if user exists, false otherwise
+     * @since 1.0
+     */
+    public boolean userExists(String username) {
+        try {
+            RealmResource realmResource = keycloakAdminClient.realm(realm);
+            UsersResource usersResource = realmResource.users();
+            List<UserRepresentation> users = usersResource.search(username);
+            return !users.isEmpty();
+        } catch (Exception e) {
+            logger.error("Error checking if user exists {}: {}", username, e.getMessage());
+            return false;
         }
-        return null;
     }
 }
