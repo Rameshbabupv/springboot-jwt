@@ -1,14 +1,13 @@
-server:
-  port: 8080
-  servlet:
-    context-path: /
+# default Profile Configuration for JWT Authentication
+# Inherits base configuration from application.yml
 
 spring:
   application:
     name: nexus
+  profiles:
+    active: dev
   datasource:
     # PostgreSQL Database Configuration (default)
-    # For H2 testing, use application-test.yml profile
     url: jdbc:postgresql://localhost:5432/nexus_hrms
     username: rameshbabu
     password: ${POSTGRES_PASSWORD:nexus_password}
@@ -32,15 +31,20 @@ spring:
     oauth2:
       resourceserver:
         jwt:
+          # For development, we'll use the Keycloak instance from podman configuration
+          # This will be used when Keycloak is available
           issuer-uri: http://localhost:8090/realms/systech
+          # Allow startup without Keycloak by disabling eager validation
+          jwk-set-uri: http://localhost:8090/realms/systech/protocol/openid-connect/certs
 
-# CORS Configuration for React Frontend
+# CORS Configuration for React Frontend (Development)
 nexus:
   security:
     cors:
       allowed-origins:
         - http://localhost:3000
         - http://localhost:3001
+        - http://localhost:8080
       allowed-methods:
         - GET
         - POST
@@ -53,12 +57,20 @@ nexus:
         - X-Requested-With
       max-age: 3600
 
+# Keycloak Admin Configuration for User Management
+keycloak:
+  admin:
+    server-url: http://localhost:8090
+    realm: systech
+    client-id: admin-cli
+    username: admin
+    password: admin
+
+# Development-specific logging (more verbose for security debugging)
 logging:
   level:
     com.systech.nexus: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG
+    org.springframework.web.cors: DEBUG
     root: INFO
-  file:
-    name: logs/application.log
-  pattern:
-    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
-    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
